@@ -1,7 +1,13 @@
 import { defineStore } from 'pinia';
-import { ref, reactive } from 'vue';
-import type { MovementMode } from '../viewer';
+import { ref, markRaw, reactive } from 'vue';
+import type { MovementMode } from '../engine/Viewer';
 import type * as THREE from 'three';
+
+const copyVector3 = (src: THREE.Vector3, dest: { x: number; y: number; z: number }) => {
+    dest.x = parseFloat(src.x.toFixed(2));
+    dest.y = parseFloat(src.y.toFixed(2));
+    dest.z = parseFloat(src.z.toFixed(2));
+}
 
 export const useSceneStore = defineStore('scene', () => {
     // 加载状态 
@@ -13,18 +19,28 @@ export const useSceneStore = defineStore('scene', () => {
 
     // 模型相关 
     const modelRoot = ref<THREE.Object3D | null>(null);
-    const modelLabelPrefix = ref('KB3D_API_TwoBedroom_A_');
-    const modelScale = ref(1);
 
     // 移动控制 
     const movementMode = ref<MovementMode>('fly');
-    const moveSpeed = ref(100);
+    const moveSpeed = ref(20);
 
     // 摄像机 
-    const cameraPosition = reactive({ x: 10, y: 10, z: 10 });
+    const cameraPosition = reactive({ x: 1, y: 1, z: 1 });
     const cameraDirection = reactive({ x: 0, y: 0, z: -1 });
     const isEditingPosition = ref(false);
     const isEditingDirection = ref(false);
+
+    // 玩家位置
+    const playerPosition = reactive({ x: 0, y: 0.1, z: 0 });
+    const isEditingPlayerPosition = ref(false);
+
+    // 碰撞箱
+    const showCollisionBoxes = ref(false);
+    const collisionEnabled = ref(true);
+
+    // 交互提示
+    const showInteractionPrompt = ref(false);
+    const interactionText = ref('');
 
     // 天空盒 
     const skyboxEnabled = ref(true);
@@ -33,14 +49,14 @@ export const useSceneStore = defineStore('scene', () => {
     const sunEnabled = ref(true);
     const sunColor = ref('#FFFFFF');
     const sunIntensity = ref(1);
-    const sunPositionX = ref(500);
-    const sunPositionY = ref(1000);
-    const sunPositionZ = ref(500);
+    const sunPosition = reactive({ x: 10, y: 20, z: -20 });
 
     // 环境光 
-    const ambientEnabled = ref(true);
+    const ambientEnabled = ref(false);
     const ambientColor = ref('#FFFFFF');
     const ambientIntensity = ref(1);
+    const environmentEnabled = ref(true);
+    const environmentIntensity = ref(1);
 
     // 聚光灯 
     const spotEnabled = ref(false);
@@ -52,33 +68,20 @@ export const useSceneStore = defineStore('scene', () => {
     const spotDistance = ref(1000);
 
     // Actions 
-    function setLoading(loading: boolean, progress?: number) {
-        isLoading.value = loading;
-        if (progress !== undefined) {
-            loadingProgress.value = progress;
-        }
-    }
-
     function setModelRoot(root: THREE.Object3D | null) {
-        modelRoot.value = root;
+        modelRoot.value = root ? markRaw(root) : null;
     }
 
-    function updateCameraPosition(x: number, y: number, z: number) {
-        cameraPosition.x = x;
-        cameraPosition.y = y;
-        cameraPosition.z = z;
+    function updateCameraPosition(pos: THREE.Vector3) {
+        copyVector3(pos, cameraPosition);
     }
 
-    function updateCameraDirection(x: number, y: number, z: number) {
-        cameraDirection.x = x;
-        cameraDirection.y = y;
-        cameraDirection.z = z;
+    function updateCameraDirection(pos: THREE.Vector3) {
+        copyVector3(pos, cameraDirection);
     }
 
-    function setSunPosition(x: number, y: number, z: number) {
-        sunPositionX.value = x;
-        sunPositionY.value = y;
-        sunPositionZ.value = z;
+    function updatePlayerPosition(pos: THREE.Vector3) {
+        copyVector3(pos, playerPosition);
     }
 
     return {
@@ -89,8 +92,6 @@ export const useSceneStore = defineStore('scene', () => {
         isDarkMode,
         // 模型
         modelRoot,
-        modelLabelPrefix,
-        modelScale,
         // 移动控制
         movementMode,
         moveSpeed,
@@ -99,19 +100,28 @@ export const useSceneStore = defineStore('scene', () => {
         cameraDirection,
         isEditingPosition,
         isEditingDirection,
+        // 玩家位置
+        playerPosition,
+        isEditingPlayerPosition,
+        // 碰撞箱显示
+        showCollisionBoxes,
+        collisionEnabled,
+        // 交互提示
+        showInteractionPrompt,
+        interactionText,
         // 天空盒
         skyboxEnabled,
         // 太阳光
         sunEnabled,
         sunColor,
         sunIntensity,
-        sunPositionX,
-        sunPositionY,
-        sunPositionZ,
+        sunPosition,
         // 环境光
         ambientEnabled,
         ambientColor,
         ambientIntensity,
+        environmentEnabled,
+        environmentIntensity,
         // 聚光灯
         spotEnabled,
         spotColor,
@@ -121,10 +131,9 @@ export const useSceneStore = defineStore('scene', () => {
         spotDecay,
         spotDistance,
         // Actions
-        setLoading,
         setModelRoot,
         updateCameraPosition,
         updateCameraDirection,
-        setSunPosition,
+        updatePlayerPosition,
     };
 });

@@ -43,5 +43,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{ secrets.REMOTE_TARGET }}
+            ln -sfn /data/yucca/models models
             nginx -s reload
             echo "Bun Deployment successful!"

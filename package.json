@@ -12,6 +12,7 @@
     "naive-ui": "^2.43.2",
     "pinia": "^3.0.4",
     "three": "^0.181.1",
+    "three-mesh-bvh": "^0.9.3",
     "vue": "^3.4.0"
   },
   "devDependencies": {

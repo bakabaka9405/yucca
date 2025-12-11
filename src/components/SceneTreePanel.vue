@@ -3,9 +3,8 @@ import { ref, watch } from 'vue';
 import { NSpace, NText, NSlider, NTree, type TreeOption } from 'naive-ui';
 import { storeToRefs } from 'pinia';
 import { useSceneStore } from '../stores/sceneStore';
-import type * as THREE from 'three';
+import type * as THREE from 'three/webgpu';
 
-// 模型层级树节点接口
 export interface SceneTreeNode extends TreeOption {
     key: string;
     label: string;
@@ -14,24 +13,17 @@ export interface SceneTreeNode extends TreeOption {
 }
 
 const store = useSceneStore();
-const { modelRoot, modelLabelPrefix } = storeToRefs(store);
+const { modelRoot, movementMode } = storeToRefs(store);
 
 const sceneTreeData = ref<SceneTreeNode[]>([]);
 const checkedKeys = ref<string[]>([]);
 const treeMaxDepth = ref(4);
 
-const removePrefix = (s: string, prefix: string) => {
-    if (prefix && s.startsWith(prefix)) {
-        return s.slice(prefix.length);
-    }
-    return s;
-};
-
 const buildSceneTree = (object: THREE.Object3D, parentKey = '', currentDepth = 1): SceneTreeNode => {
     const key = parentKey ? `${parentKey}-${object.id}` : `${object.id}`;
     const node: SceneTreeNode = {
         key,
-        label: removePrefix(object.name, modelLabelPrefix.value || '') || `${object.type} #${object.id}`,
+        label: object.name || `${object.type} #${object.id}`,
         object3D: object,
     };
 
@@ -42,7 +34,6 @@ const buildSceneTree = (object: THREE.Object3D, parentKey = '', currentDepth = 1
     return node;
 };
 
-// 收集所有节点的 key
 const collectAllKeys = (nodes: SceneTreeNode[]): string[] => {
     const keys: string[] = [];
     const traverse = (nodeList: SceneTreeNode[]) => {
@@ -57,7 +48,6 @@ const collectAllKeys = (nodes: SceneTreeNode[]): string[] => {
     return keys;
 };
 
-// 重新构建场景树
 const rebuildSceneTree = () => {
     if (modelRoot.value) {
         const treeNode = buildSceneTree(modelRoot.value);
@@ -66,7 +56,6 @@ const rebuildSceneTree = () => {
     }
 };
 
-// 处理勾选状态变化
 const handleCheckedKeysUpdate = (
     keys: string[],
     _options: Array<TreeOption | null>,
@@ -79,16 +68,42 @@ const handleCheckedKeysUpdate = (
     checkedKeys.value = keys;
 };
 
-// 监听模型根节点变化
+function visitNode(path: string[]): SceneTreeNode | null {
+    let cur = sceneTreeData.value;
+    for (const name of path) {
+        const next = cur.find(node => node.object3D.name === name);
+        if (!next) return null;
+        if (name === path[path.length - 1]) {
+            return next;
+        }
+        cur = next.children || [];
+    }
+    return null;
+}
+
 watch(modelRoot, (newRoot) => {
     if (newRoot) {
         rebuildSceneTree();
     }
 }, { immediate: true });
 
-// 监听树状图最大深度变化
 watch(treeMaxDepth, () => {
     rebuildSceneTree();
+});
+
+watch(movementMode, (mode) => {
+    const isTop = mode === 'topView';
+    const node = visitNode(['Scene', 'Scene_Collection', 'Ceiling']);
+    if (node) {
+        node.object3D.visible = !isTop;
+        if (!isTop) {
+            if (!checkedKeys.value.includes(node.key)) {
+                checkedKeys.value.push(node.key);
+            }
+        } else {
+            checkedKeys.value = checkedKeys.value.filter(k => k !== node.key);
+        }
+    }
 });
 </script>
 

@@ -28,7 +28,7 @@ const { isDarkMode } = storeToRefs(store);
             </n-tab-pane>
 
             <!-- 模型层级选项卡 -->
-            <n-tab-pane name="hierarchy" tab="模型层级">
+            <n-tab-pane name="hierarchy" tab="模型层级" display-directive="show">
                 <SceneTreePanel />
             </n-tab-pane>
         </n-tabs>
