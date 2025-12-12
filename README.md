@@ -30,23 +30,36 @@ bun run build
 目前已实现：
 
 - 基础 3D 场景渲染
-- 双模式相机控制（飞行模式 / 轨道模式）
-- 场景树面板
+- 多模式相机控制（飞行 / 轨道 / 第三人称 / 顶视图）
+- 角色控制与物理碰撞检测（基于 three-mesh-bvh）
+- 骨骼动画绑定
+- 场景交互系统（开关门）
+- 场景树面板与参数调节
 - 基础光照模型（全局光照、太阳光、摄像机锥形光）
-- 场景参数调节面板
-- 模型加载（支持 GLTF/GLB，Draco 压缩）
+- 模型加载（支持 GLTF/GLB/FBX，KTX2 编码，Draco 压缩）
+- 无限网格辅助显示
 
 ## 目录结构
 
 ```
 public/           # 静态资源
+├── basis/        # Basis 转码器
 ├── cubeMap/      # 天空盒贴图
 ├── draco/        # Draco 解码器
-├── textures/     # 纹理贴图
-├── models/       # 3D 模型文件放这里
+├── models/       # 3D 模型文件
 src/
-├── viewer.ts     # Three.js 场景核心类
-├── components/   # Vue 组件
+├── components/   # Vue UI 组件
+├── config/       # 配置文件
+├── engine/       # 3D 引擎核心逻辑
+│   ├── controllers/       # 相机与角色控制器
+│   ├── Character.ts       # 角色控制逻辑
+│   ├── ColliderManager.ts # 碰撞检测管理
+│   ├── DoorManager.ts     # 交互物体管理
+│   ├── InfiniteGrid.ts    # 无限网格
+│   ├── LightManager.ts    # 灯光管理
+│   ├── ModelLoader.ts     # 模型加载器
+│   ├── Viewer.ts          # 场景核心类
+│   └── ViewerInit.ts      # 场景初始化
 └── stores/       # Pinia 状态管理
 ```
 
