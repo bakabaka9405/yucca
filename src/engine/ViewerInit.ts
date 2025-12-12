@@ -32,7 +32,7 @@ export async function initViewerScene() {
 
     // 加载天空盒
     const cubeTextureLoader = new THREE.CubeTextureLoader();
-    cubeTextureLoader.setPath('/cubeMap/');
+    cubeTextureLoader.setPath('cubeMap/');
     const skyboxTexture = cubeTextureLoader.load(ASSETS.textures.skybox);
     viewer.scene.background = skyboxTexture;
 
