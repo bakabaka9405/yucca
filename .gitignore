@@ -20,5 +20,3 @@ dist-ssr
 *.suo
 *.sln
 *.sw?
-
-public/models
