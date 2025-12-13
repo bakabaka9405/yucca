@@ -9,6 +9,7 @@ import { TopViewController } from './controllers/TopViewController';
 import { Character } from './Character';
 import { InputManager } from './InputManager';
 import { PostProcessing, type GTAOParams } from './PostProcessing';
+import { LightManager } from './LightManager';
 
 export type MovementMode = 'fly' | 'orbit' | 'thirdPerson' | 'topView';
 export class Viewer {
@@ -28,8 +29,12 @@ export class Viewer {
 	private mixers: THREE.AnimationMixer[] = [];
 	private worldDirection = new THREE.Vector3();
 	private tempTarget = new THREE.Vector3();
+	private skyboxTexture: THREE.CubeTexture | null = null;
 
 	public character: Character | null = null;
+	public lightManager: LightManager | null = null;
+
+	private updateListeners: Set<(delta: number) => void> = new Set();
 
 	constructor() {
 		// 场景
@@ -154,6 +159,11 @@ export class Viewer {
 		return this.worldDirection.clone();
 	}
 
+	onUpdate(callback: (delta: number) => void) {
+		this.updateListeners.add(callback);
+		return () => this.updateListeners.delete(callback);
+	}
+
 	private animate = () => {
 		const delta = this.clock.getDelta();
 
@@ -166,6 +176,8 @@ export class Viewer {
 		}
 
 		this.currentController.update(delta);
+
+		this.updateListeners.forEach(listener => listener(delta));
 
 		this.stats.update();
 		
@@ -203,6 +215,15 @@ export class Viewer {
 
 	setEnvironmentCollider(collider: THREE.Object3D) {
 		(this.controllers.thirdPerson as ThirdPersonController).setCollider(collider as THREE.Mesh);
+	}
+
+	setSkybox(texture: THREE.CubeTexture) {
+		this.skyboxTexture = texture;
+		this.scene.background = texture;
+	}
+
+	setSkyboxEnabled(enabled: boolean) {
+		this.scene.background = enabled ? this.skyboxTexture : null;
 	}
 }
 

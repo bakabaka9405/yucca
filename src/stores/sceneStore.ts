@@ -48,7 +48,7 @@ export const useSceneStore = defineStore('scene', () => {
     // 太阳光 
     const sunEnabled = ref(true);
     const sunColor = ref('#FFFFFF');
-    const sunIntensity = ref(1);
+    const sunIntensity = ref(5);
     const sunPosition = reactive({ x: 10, y: 20, z: -20 });
 
     // 环境光 
@@ -59,9 +59,9 @@ export const useSceneStore = defineStore('scene', () => {
     const environmentIntensity = ref(1);
 
     // GTAO
-    const gtaoEnabled = ref(true);
+    const gtaoEnabled = ref(false);
     const gtaoSamples = ref(16);
-    const gtaoDistanceExponent = ref(1);
+    const gtaoDistanceExponent = ref(2);
     const gtaoDistanceFallOff = ref(1);
     const gtaoRadius = ref(0.25);
     const gtaoScale = ref(1);

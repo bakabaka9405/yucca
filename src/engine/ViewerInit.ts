@@ -1,9 +1,7 @@
-import { watchEffect, watch } from 'vue';
+import { useSceneStore } from '../stores/sceneStore';
 import viewer from './Viewer';
 import * as THREE from 'three/webgpu';
 import { ModelLoader } from './ModelLoader';
-import { useSceneStore } from '../stores/sceneStore';
-import { storeToRefs } from 'pinia';
 import { InfiniteGrid } from './InfiniteGrid';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { LightManager } from './LightManager';
@@ -18,15 +16,6 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 export async function initViewerScene() {
     const store = useSceneStore();
-    const {
-        skyboxEnabled,
-        cameraPosition,
-        cameraDirection,
-        isEditingPosition,
-        isEditingDirection,
-        movementMode,
-        showCollisionBoxes
-    } = storeToRefs(store);
 
     await viewer.init();
 
@@ -34,13 +23,13 @@ export async function initViewerScene() {
     const cubeTextureLoader = new THREE.CubeTextureLoader();
     cubeTextureLoader.setPath('cubeMap/');
     const skyboxTexture = cubeTextureLoader.load(ASSETS.textures.skybox);
-    viewer.scene.background = skyboxTexture;
+    viewer.setSkybox(skyboxTexture);
 
     const infiniteGrid = new InfiniteGrid();
     viewer.scene.add(infiniteGrid);
 
     viewer.scene.add(viewer.camera);
-    new LightManager(viewer.scene, viewer.camera);
+    viewer.lightManager = new LightManager(viewer.scene, viewer.camera);
 
     const modelLoader = new ModelLoader(viewer.renderer);
 
@@ -98,37 +87,11 @@ export async function initViewerScene() {
         }
 
         colliderManager.generateCollider(gltf.scene);
-        colliderManager.setVisibility(showCollisionBoxes.value);
+        colliderManager.setVisibility(store.showCollisionBoxes);
 
         loadCharacter();
     }).catch((error) => {
         console.error('模型加载失败:', error);
         store.isLoading = false;
-    });
-
-    watch(cameraPosition, (pos) => {
-        if (isEditingPosition.value) {
-            const position = new THREE.Vector3(pos.x, pos.y, pos.z);
-            viewer.setCameraPosition(position);
-        }
-    }, { deep: true });
-
-    watch(cameraDirection, (dir) => {
-        if (isEditingDirection.value) {
-            const direction = new THREE.Vector3(dir.x, dir.y, dir.z);
-            if (direction.lengthSq() > 0) {
-                viewer.setCameraDirection(direction);
-            }
-        }
-    }, { deep: true });
-
-    watchEffect(() => {
-        viewer.setMovementMode(movementMode.value);
-        viewer.scene.background = skyboxEnabled.value ? skyboxTexture : null;
-    });
-
-    // 碰撞箱显示控制
-    watch(showCollisionBoxes, (visible) => {
-        colliderManager.setVisibility(visible);
     });
 }

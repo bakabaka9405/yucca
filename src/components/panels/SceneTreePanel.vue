@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue';
 import { NSpace, NText, NSlider, NTree, type TreeOption } from 'naive-ui';
 import { storeToRefs } from 'pinia';
-import { useSceneStore } from '../stores/sceneStore';
+import { useSceneStore } from '../../stores/sceneStore';
 import type * as THREE from 'three/webgpu';
 
 export interface SceneTreeNode extends TreeOption {

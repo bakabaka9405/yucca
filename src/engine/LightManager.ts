@@ -1,26 +1,22 @@
 import * as THREE from 'three/webgpu';
-import { useSceneStore } from '../stores/sceneStore';
-import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
 
 export class LightManager {
     private scene: THREE.Scene;
     private camera: THREE.Camera;
-    private sunLight!: THREE.DirectionalLight;
-    private ambientLight!: THREE.AmbientLight;
-    private spotLight!: THREE.SpotLight;
+    public sunLight!: THREE.DirectionalLight;
+    public ambientLight!: THREE.AmbientLight;
+    public spotLight!: THREE.SpotLight;
     private cameraHelper!: THREE.CameraHelper;
 
     constructor(scene: THREE.Scene, camera: THREE.Camera) {
         this.scene = scene;
         this.camera = camera;
         this.initLights();
-        this.setupReactivity();
     }
 
     private initLights() {
         // 太阳光（平行光）
-        this.sunLight = new THREE.DirectionalLight(0xFFFFFF, 1);
+        this.sunLight = new THREE.DirectionalLight(0xFFFFFF, 5);
         this.sunLight.position.set(10, 20, -20);
         this.sunLight.castShadow = true;
         this.sunLight.shadow.bias = -0.0001;
@@ -58,50 +54,27 @@ export class LightManager {
         this.camera.add(this.spotLight.target);
     }
 
-    private setupReactivity() {
-        const store = useSceneStore();
-        const {
-            sunEnabled,
-            sunColor,
-            sunIntensity,
-            sunPosition,
-            ambientEnabled,
-            ambientColor,
-            ambientIntensity,
-            spotEnabled,
-            spotColor,
-            spotIntensity,
-            spotAngle,
-            spotPenumbra,
-            spotDecay,
-            spotDistance,
-        } = storeToRefs(store);
+    updateSunLight(enabled: boolean, color: string, intensity: number, position: { x: number, y: number, z: number }) {
+        this.sunLight.visible = enabled;
+        this.sunLight.color.set(color);
+        this.sunLight.intensity = intensity;
+        this.sunLight.position.set(position.x, position.y, position.z);
+        this.cameraHelper.update();
+    }
 
-        // 太阳光控制
-        watchEffect(() => {
-            this.sunLight.visible = sunEnabled.value;
-            this.sunLight.color.set(sunColor.value);
-            this.sunLight.intensity = sunIntensity.value;
-            this.sunLight.position.set(sunPosition.value.x, sunPosition.value.y, sunPosition.value.z);
-            this.cameraHelper.update();
-        });
+    updateAmbientLight(enabled: boolean, color: string, intensity: number) {
+        this.ambientLight.visible = enabled;
+        this.ambientLight.color.set(color);
+        this.ambientLight.intensity = intensity;
+    }
 
-        // 环境光控制
-        watchEffect(() => {
-            this.ambientLight.visible = ambientEnabled.value;
-            this.ambientLight.color.set(ambientColor.value);
-            this.ambientLight.intensity = ambientIntensity.value;
-        });
-
-        // 聚光灯控制
-        watchEffect(() => {
-            this.spotLight.visible = spotEnabled.value;
-            this.spotLight.color.set(spotColor.value);
-            this.spotLight.intensity = spotIntensity.value;
-            this.spotLight.angle = (spotAngle.value * Math.PI) / 180;
-            this.spotLight.penumbra = spotPenumbra.value;
-            this.spotLight.decay = spotDecay.value;
-            this.spotLight.distance = spotDistance.value;
-        });
+    updateSpotLight(enabled: boolean, color: string, intensity: number, angle: number, penumbra: number, decay: number, distance: number) {
+        this.spotLight.visible = enabled;
+        this.spotLight.color.set(color);
+        this.spotLight.intensity = intensity;
+        this.spotLight.angle = (angle * Math.PI) / 180;
+        this.spotLight.penumbra = penumbra;
+        this.spotLight.decay = decay;
+        this.spotLight.distance = distance;
     }
 }
