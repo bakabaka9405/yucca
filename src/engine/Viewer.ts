@@ -8,6 +8,7 @@ import { ThirdPersonController } from './controllers/ThirdPersonController';
 import { TopViewController } from './controllers/TopViewController';
 import { Character } from './Character';
 import { InputManager } from './InputManager';
+import { PostProcessing, type GTAOParams } from './PostProcessing';
 
 export type MovementMode = 'fly' | 'orbit' | 'thirdPerson' | 'topView';
 export class Viewer {
@@ -15,6 +16,8 @@ export class Viewer {
 	camera: THREE.PerspectiveCamera;
 	stats: Stats;
 	renderer: THREE.WebGPURenderer;
+	gtaoPostProcessing: PostProcessing | null = null;
+	gtaoEnabled: boolean = true;
 
 	private controllers: { [key in MovementMode]: MovementController };
 	private currentController: MovementController;
@@ -95,7 +98,18 @@ export class Viewer {
 		const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
 		this.environmentTexture = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 		this.scene.environment = this.environmentTexture;
+
+		// Post-processing setup
+		this.gtaoPostProcessing = new PostProcessing(this.renderer, this.scene, this.camera);
+
 		this.currentController.enter();
+	}
+
+	updateGTAO(params: GTAOParams) {
+		this.gtaoEnabled = params.enabled;
+		if (this.gtaoPostProcessing) {
+			this.gtaoPostProcessing.update(params);
+		}
 	}
 
 	lockPointer() {
@@ -154,7 +168,12 @@ export class Viewer {
 		this.currentController.update(delta);
 
 		this.stats.update();
-		this.renderer.render(this.scene, this.camera);
+		
+		if (this.gtaoPostProcessing && this.gtaoEnabled) {
+			this.gtaoPostProcessing.render();
+		} else {
+			this.renderer.render(this.scene, this.camera);
+		}
 
 		InputManager.getInstance().update();
 	};

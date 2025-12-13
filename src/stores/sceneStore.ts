@@ -58,6 +58,16 @@ export const useSceneStore = defineStore('scene', () => {
     const environmentEnabled = ref(true);
     const environmentIntensity = ref(1);
 
+    // GTAO
+    const gtaoEnabled = ref(true);
+    const gtaoSamples = ref(16);
+    const gtaoDistanceExponent = ref(1);
+    const gtaoDistanceFallOff = ref(1);
+    const gtaoRadius = ref(0.25);
+    const gtaoScale = ref(1);
+    const gtaoThickness = ref(1);
+    const gtaoAoOnly = ref(false);
+
     // 聚光灯 
     const spotEnabled = ref(false);
     const spotColor = ref('#FFFFFF');
@@ -122,6 +132,15 @@ export const useSceneStore = defineStore('scene', () => {
         ambientIntensity,
         environmentEnabled,
         environmentIntensity,
+        // GTAO
+        gtaoEnabled,
+        gtaoSamples,
+        gtaoDistanceExponent,
+        gtaoDistanceFallOff,
+        gtaoRadius,
+        gtaoScale,
+        gtaoThickness,
+        gtaoAoOnly,
         // 聚光灯
         spotEnabled,
         spotColor,
