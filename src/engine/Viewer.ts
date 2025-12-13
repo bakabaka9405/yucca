@@ -7,6 +7,7 @@ import { OrbitController } from './controllers/OrbitController';
 import { ThirdPersonController } from './controllers/ThirdPersonController';
 import { TopViewController } from './controllers/TopViewController';
 import { Character } from './Character';
+import { InputManager } from './InputManager';
 
 export type MovementMode = 'fly' | 'orbit' | 'thirdPerson' | 'topView';
 export class Viewer {
@@ -154,6 +155,8 @@ export class Viewer {
 
 		this.stats.update();
 		this.renderer.render(this.scene, this.camera);
+
+		InputManager.getInstance().update();
 	};
 
 	dispose() {
@@ -180,7 +183,7 @@ export class Viewer {
 	}
 
 	setEnvironmentCollider(collider: THREE.Object3D) {
-		(this.controllers.thirdPerson as ThirdPersonController).setCollider(collider as any);
+		(this.controllers.thirdPerson as ThirdPersonController).setCollider(collider as THREE.Mesh);
 	}
 }
 

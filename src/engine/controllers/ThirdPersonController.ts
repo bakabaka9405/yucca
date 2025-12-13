@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { ExtendedTriangle } from 'three-mesh-bvh';
 import { MovementController } from './MovementController';
 import { ThirdPersonCamera } from './ThirdPersonCamera';
 import { useSceneStore } from '../../stores/sceneStore';
@@ -6,6 +7,7 @@ import { storeToRefs } from 'pinia';
 import { Ref, ref } from 'vue';
 import { Character } from '../Character';
 import { doorManager } from '../DoorManager';
+import { InputManager } from '../InputManager';
 
 export class ThirdPersonController implements MovementController {
     private camera: THREE.Camera;
@@ -15,11 +17,6 @@ export class ThirdPersonController implements MovementController {
     private playerMesh: THREE.Object3D | null = null;
     private playerVelocity: THREE.Vector3;
     private playerDirection = new THREE.Vector3();
-
-    private moveForward = false;
-    private moveBackward = false;
-    private moveLeft = false;
-    private moveRight = false;
 
     private tempForward = new THREE.Vector3();
     private tempRight = new THREE.Vector3();
@@ -38,8 +35,6 @@ export class ThirdPersonController implements MovementController {
 
         this.thirdPersonCamera = new ThirdPersonCamera(camera, domElement);
 
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onKeyUp = this.onKeyUp.bind(this);
         this.onClick = this.onClick.bind(this);
     }
 
@@ -61,8 +56,6 @@ export class ThirdPersonController implements MovementController {
     }
 
     enter() {
-        document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keyup', this.onKeyUp);
         this.domElement.addEventListener('click', this.onClick);
 
         if (this.playerMesh) {
@@ -74,8 +67,6 @@ export class ThirdPersonController implements MovementController {
     }
 
     leave() {
-        document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('keyup', this.onKeyUp);
         this.domElement.removeEventListener('click', this.onClick);
         this.thirdPersonCamera.setLocked(false);
         if (document.pointerLockElement === this.domElement) {
@@ -103,38 +94,24 @@ export class ThirdPersonController implements MovementController {
         }
     }
 
-    private onKeyDown(event: KeyboardEvent) {
-        switch (event.code) {
-            case 'KeyW': case 'ArrowUp': this.moveForward = true; break;
-            case 'KeyS': case 'ArrowDown': this.moveBackward = true; break;
-            case 'KeyA': case 'ArrowLeft': this.moveLeft = true; break;
-            case 'KeyD': case 'ArrowRight': this.moveRight = true; break;
-            case 'KeyF': doorManager.interact(); break;
-        }
-    }
-
-    private onKeyUp(event: KeyboardEvent) {
-        switch (event.code) {
-            case 'KeyW': case 'ArrowUp': this.moveForward = false; break;
-            case 'KeyS': case 'ArrowDown': this.moveBackward = false; break;
-            case 'KeyA': case 'ArrowLeft': this.moveLeft = false; break;
-            case 'KeyD': case 'ArrowRight': this.moveRight = false; break;
-        }
-    }
-
     private handleInput(deltaTime: number) {
         if (!this.playerMesh) return;
+
+        const input = InputManager.getInstance();
+        const movement = input.getMovementInput();
+
+        if (input.isKeyDown('KeyF')) {
+            doorManager.interact();
+        }
+
         this.camera.getWorldDirection(this.tempForward);
         this.tempForward.y = 0;
         this.tempForward.normalize();
         this.tempRight.crossVectors(this.tempForward, this.camera.up).normalize();
 
         this.playerDirection.set(0, 0, 0);
-
-        if (this.moveForward) this.playerDirection.add(this.tempForward);
-        if (this.moveBackward) this.playerDirection.sub(this.tempForward);
-        if (this.moveRight) this.playerDirection.add(this.tempRight);
-        if (this.moveLeft) this.playerDirection.sub(this.tempRight);
+        this.playerDirection.addScaledVector(this.tempForward, movement.z);
+        this.playerDirection.addScaledVector(this.tempRight, movement.x);
 
         if (this.playerDirection.lengthSq() > 0) {
             this.playerDirection.normalize();
@@ -170,7 +147,7 @@ export class ThirdPersonController implements MovementController {
         const centerOffset = new THREE.Vector3(0, 0.2, 0);
         const tempPos = this.playerMesh.position.clone().add(centerOffset).add(deltaPosition);
 
-        const bvh = (this.collider.geometry as any).boundsTree;
+        const bvh = this.collider.geometry.boundsTree;
         if (!bvh) return;
 
         const tempVector = new THREE.Vector3();
@@ -181,7 +158,7 @@ export class ThirdPersonController implements MovementController {
                     const boxToSphere = box.distanceToPoint(tempPos);
                     return boxToSphere < radius;
                 },
-                intersectsTriangle: (tri: any) => {
+                intersectsTriangle: (tri: ExtendedTriangle) => {
                     const dist = tri.closestPointToPoint(tempPos, tempVector).distanceTo(tempPos);
                     if (dist < radius) {
                         const depth = radius - dist;

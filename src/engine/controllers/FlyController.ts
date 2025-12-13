@@ -4,16 +4,13 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { MovementController } from './MovementController';
 import { useSceneStore } from '../../stores/sceneStore';
 import { storeToRefs } from 'pinia';
+import { InputManager } from '../InputManager';
 
 export class FlyController implements MovementController {
     private camera: THREE.Camera;
     private domElement: HTMLElement;
     private controls: PointerLockControls;
 
-    private moveForward = false;
-    private moveBackward = false;
-    private moveLeft = false;
-    private moveRight = false;
     private moveUp = false;
     private moveDown = false;
 
@@ -29,14 +26,10 @@ export class FlyController implements MovementController {
         this.domElement = domElement;
         this.controls = new PointerLockControls(camera, domElement);
 
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onKeyUp = this.onKeyUp.bind(this);
         this.onClick = this.onClick.bind(this);
     }
 
     enter() {
-        document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keyup', this.onKeyUp);
         this.domElement.addEventListener('click', this.onClick);
         this.controls.connect(this.domElement);
         this.controls.lock();
@@ -45,8 +38,6 @@ export class FlyController implements MovementController {
     }
 
     leave() {
-        document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('keyup', this.onKeyUp);
         this.domElement.removeEventListener('click', this.onClick);
         this.controls.unlock();
         this.controls.disconnect();
@@ -56,10 +47,15 @@ export class FlyController implements MovementController {
         if (this.controls.isLocked) {
             this.velocity.multiplyScalar(Math.exp(-5.0 * deltaTime));
 
+            const input = InputManager.getInstance();
+            const movement = input.getMovementInput();
+            this.moveUp = input.isKeyPressed('Space');
+            this.moveDown = input.isKeyPressed('ShiftLeft') || input.isKeyPressed('ShiftRight');
+
             this.direction.set(
-                Number(this.moveRight) - Number(this.moveLeft),
+                movement.x,
                 Number(this.moveUp) - Number(this.moveDown),
-                Number(this.moveForward) - Number(this.moveBackward)
+                movement.z
             );
 
             if (this.direction.lengthSq() > 0) {
@@ -86,28 +82,6 @@ export class FlyController implements MovementController {
     private onClick() {
         if (!this.controls.isLocked) {
             this.controls.lock();
-        }
-    }
-
-    private onKeyDown(event: KeyboardEvent) {
-        switch (event.code) {
-            case 'KeyW': case 'ArrowUp': this.moveForward = true; break;
-            case 'KeyS': case 'ArrowDown': this.moveBackward = true; break;
-            case 'KeyA': case 'ArrowLeft': this.moveLeft = true; break;
-            case 'KeyD': case 'ArrowRight': this.moveRight = true; break;
-            case 'Space': this.moveUp = true; break;
-            case 'ShiftLeft': case 'ShiftRight': this.moveDown = true; break;
-        }
-    }
-
-    private onKeyUp(event: KeyboardEvent) {
-        switch (event.code) {
-            case 'KeyW': case 'ArrowUp': this.moveForward = false; break;
-            case 'KeyS': case 'ArrowDown': this.moveBackward = false; break;
-            case 'KeyA': case 'ArrowLeft': this.moveLeft = false; break;
-            case 'KeyD': case 'ArrowRight': this.moveRight = false; break;
-            case 'Space': this.moveUp = false; break;
-            case 'ShiftLeft': case 'ShiftRight': this.moveDown = false; break;
         }
     }
 
