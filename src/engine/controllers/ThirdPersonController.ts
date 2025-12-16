@@ -23,6 +23,7 @@ export class ThirdPersonController implements MovementController {
     private collider: THREE.Mesh | null = null;
     private moveSpeed: Ref<number> = ref(0);
     private collisionEnabled: Ref<boolean> = ref(true);
+    private isActive: boolean = false;
 
     constructor(
         camera: THREE.Camera,
@@ -36,6 +37,17 @@ export class ThirdPersonController implements MovementController {
         this.thirdPersonCamera = new ThirdPersonCamera(camera, domElement);
 
         this.onClick = this.onClick.bind(this);
+    }
+
+    setDomElement(domElement: HTMLElement) {
+        if (this.isActive) {
+            this.domElement.removeEventListener('click', this.onClick);
+        }
+        this.domElement = domElement;
+        this.thirdPersonCamera.setDomElement(domElement);
+        if (this.isActive) {
+            this.domElement.addEventListener('click', this.onClick);
+        }
     }
 
     setCharacter(character: Character) {
@@ -56,6 +68,7 @@ export class ThirdPersonController implements MovementController {
     }
 
     enter() {
+        this.isActive = true;
         this.domElement.addEventListener('click', this.onClick);
 
         if (this.playerMesh) {
@@ -67,6 +80,7 @@ export class ThirdPersonController implements MovementController {
     }
 
     leave() {
+        this.isActive = false;
         this.domElement.removeEventListener('click', this.onClick);
         this.thirdPersonCamera.setLocked(false);
         if (document.pointerLockElement === this.domElement) {

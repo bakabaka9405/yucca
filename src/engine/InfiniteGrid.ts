@@ -40,7 +40,6 @@ export class InfiniteGrid extends THREE.Mesh {
 
 		this.scale.set(4000, 4000, 1);
 		this.rotation.x = -Math.PI / 2;
-		this.position.y = 0.05;
 		this.frustumCulled = false;
 		this.receiveShadow = true;
 	}

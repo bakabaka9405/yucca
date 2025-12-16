@@ -29,6 +29,14 @@ export class FlyController implements MovementController {
         this.onClick = this.onClick.bind(this);
     }
 
+    setDomElement(domElement: HTMLElement) {
+        const locked = this.controls.isLocked;
+        this.leave();
+        this.domElement = domElement;
+        this.controls = new PointerLockControls(this.camera, domElement);
+        if (locked) this.enter();
+    }
+
     enter() {
         this.domElement.addEventListener('click', this.onClick);
         this.controls.connect(this.domElement);

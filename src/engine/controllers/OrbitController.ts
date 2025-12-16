@@ -4,9 +4,15 @@ import { MovementController } from './MovementController';
 
 export class OrbitController implements MovementController {
     private controls: OrbitControls;
+    private camera: THREE.Camera;
 
     constructor(camera: THREE.Camera, domElement: HTMLElement) {
+        this.camera = camera;
         this.controls = new OrbitControls(camera, domElement);
+        this.setupControls();
+    }
+
+    private setupControls() {
         this.controls.enabled = false;
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.08;
@@ -15,6 +21,18 @@ export class OrbitController implements MovementController {
         this.controls.minPolarAngle = 0;
         this.controls.maxPolarAngle = Math.PI;
         this.controls.enablePan = true;
+    }
+
+    setDomElement(domElement: HTMLElement) {
+        const enabled = this.controls.enabled;
+        const target = this.controls.target.clone();
+        
+        this.controls.dispose();
+        this.controls = new OrbitControls(this.camera, domElement);
+        this.setupControls();
+        
+        this.controls.target.copy(target);
+        this.controls.enabled = enabled;
     }
 
     enter() {

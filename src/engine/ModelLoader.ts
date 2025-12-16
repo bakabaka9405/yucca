@@ -64,4 +64,8 @@ export class ModelLoader {
         this.dracoLoader.dispose();
         this.ktx2Loader.dispose();
     }
+
+    updateRenderer(renderer: THREE.WebGPURenderer) {
+        this.ktx2Loader.detectSupport(renderer);
+    }
 }

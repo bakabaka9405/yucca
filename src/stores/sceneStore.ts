@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, markRaw } from 'vue';
-import type { MovementMode } from '../engine/Viewer';
+import type { MovementMode } from '../engine/Engine';
 import type * as THREE from 'three';
 
 const copyVector3 = (src: THREE.Vector3, dest: { x: number; y: number; z: number }) => {

@@ -10,15 +10,31 @@ export class TopViewController implements MovementController {
     constructor(camera: THREE.Camera, domElement: HTMLElement) {
         this.camera = camera;
         this.controls = new OrbitControls(camera, domElement);
+        this.setupControls();
+    }
+
+    private setupControls() {
         this.controls.target.set(0, 0, 0);
         this.controls.enabled = false;
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.08;
         this.controls.rotateSpeed = 0.35;
         this.controls.minPolarAngle = 0;
-        this.controls.maxPolarAngle = 0.01; // Lock to top view
+        this.controls.maxPolarAngle = 0.1;
         this.controls.enablePan = true;
-        this.controls.screenSpacePanning = true; // Pan in XZ plane
+        this.controls.screenSpacePanning = true;
+    }
+
+    setDomElement(domElement: HTMLElement) {
+        const enabled = this.controls.enabled;
+        const target = this.controls.target.clone();
+
+        this.controls.dispose();
+        this.controls = new OrbitControls(this.camera, domElement);
+        this.setupControls();
+
+        this.controls.target.copy(target);
+        this.controls.enabled = enabled;
     }
 
     enter() {

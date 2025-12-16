@@ -2,6 +2,7 @@ import { watchEffect, onUnmounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useSceneStore } from '../stores/sceneStore';
 import viewer from '../engine/Viewer';
+import engine from '../engine/Engine';
 import * as THREE from 'three/webgpu';
 import { colliderManager } from '../engine/ColliderManager';
 
@@ -50,7 +51,7 @@ export function useViewerSync() {
     watchEffect(() => {
         if (isEditingPosition.value) {
             const { x, y, z } = cameraPosition.value;
-            viewer.setCameraPosition(new THREE.Vector3(x, y, z));
+            engine.setCameraPosition(new THREE.Vector3(x, y, z));
         }
     });
 
@@ -60,27 +61,27 @@ export function useViewerSync() {
             const { x, y, z } = cameraDirection.value;
             const direction = new THREE.Vector3(x, y, z);
             if (direction.lengthSq() > 0) {
-                viewer.setCameraDirection(direction);
+                engine.setCameraDirection(direction);
             }
         }
     });
 
     // Player Position
     watchEffect(() => {
-        if (isEditingPlayerPosition.value && viewer.character?.mesh) {
+        if (isEditingPlayerPosition.value && engine.character?.mesh) {
             const { x, y, z } = playerPosition.value;
-            viewer.character.mesh.position.set(x, y, z);
+            engine.character.mesh.position.set(x, y, z);
         }
     });
 
     // Movement Mode
     watchEffect(() => {
-        viewer.setMovementMode(movementMode.value);
+        engine.setMovementMode(movementMode.value);
     });
 
     // Skybox
     watchEffect(() => {
-        viewer.setSkyboxEnabled(skyboxEnabled.value);
+        engine.setSkyboxEnabled(skyboxEnabled.value);
     });
 
     // Collision Boxes
@@ -95,16 +96,16 @@ export function useViewerSync() {
 
     // Environment
     watchEffect(() => {
-        viewer.setEnvironmentEnabled(environmentEnabled.value);
+        engine.setEnvironmentEnabled(environmentEnabled.value);
     });
 
     watchEffect(() => {
-        viewer.setEnvironmentIntensity(environmentIntensity.value);
+        engine.setEnvironmentIntensity(environmentIntensity.value);
     });
 
     // GTAO
     watchEffect(() => {
-        viewer.updateGTAO({
+        engine.updateGTAO({
             enabled: gtaoEnabled.value,
             samples: gtaoSamples.value,
             distanceExponent: gtaoDistanceExponent.value,
@@ -118,7 +119,7 @@ export function useViewerSync() {
 
     // Lights
     watchEffect(() => {
-        viewer.lightManager?.updateSunLight(
+        engine.lightManager?.updateSunLight(
             sunEnabled.value,
             sunColor.value,
             sunIntensity.value,
@@ -127,7 +128,7 @@ export function useViewerSync() {
     });
 
     watchEffect(() => {
-        viewer.lightManager?.updateAmbientLight(
+        engine.lightManager?.updateAmbientLight(
             ambientEnabled.value,
             ambientColor.value,
             ambientIntensity.value
@@ -135,7 +136,7 @@ export function useViewerSync() {
     });
 
     watchEffect(() => {
-        viewer.lightManager?.updateSpotLight(
+        engine.lightManager?.updateSpotLight(
             spotEnabled.value,
             spotColor.value,
             spotIntensity.value,
@@ -148,18 +149,18 @@ export function useViewerSync() {
 
     // --- Engine -> Store Sync ---
 
-    const cleanup = viewer.onUpdate(() => {
+    const cleanup = engine.onUpdate(() => {
         // Sync Camera
         if (!isEditingPosition.value) {
             store.updateCameraPosition(viewer.camera.position);
         }
         if (!isEditingDirection.value) {
-            store.updateCameraDirection(viewer.getCameraDirection());
+            store.updateCameraDirection(engine.getCameraDirection());
         }
 
         // Sync Player
-        if (movementMode.value === 'thirdPerson' && !isEditingPlayerPosition.value && viewer.character?.mesh) {
-            store.updatePlayerPosition(viewer.character.mesh.position);
+        if (movementMode.value === 'thirdPerson' && !isEditingPlayerPosition.value && engine.character?.mesh) {
+            store.updatePlayerPosition(engine.character.mesh.position);
         }
     });
 

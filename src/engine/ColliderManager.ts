@@ -1,14 +1,15 @@
 import * as THREE from 'three/webgpu';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import viewer from './Viewer';
 
 export class ColliderManager {
 	private collider: THREE.Mesh | null = null;
+	private scene: THREE.Scene | null = null;
 
 	constructor() { }
 
-	public generateCollider(model: THREE.Object3D) {
+	public generateCollider(model: THREE.Object3D, scene: THREE.Scene, onColliderCreated: (collider: THREE.Mesh) => void) {
 		this.dispose();
+		this.scene = scene;
 
 		const geometries: THREE.BufferGeometry[] = [];
 
@@ -49,8 +50,8 @@ export class ColliderManager {
 			this.collider.visible = false;
 			this.collider.name = 'collider';
 
-			viewer.scene.add(this.collider);
-			viewer.setEnvironmentCollider(this.collider);
+			this.scene.add(this.collider);
+			onColliderCreated(this.collider);
 		}
 	}
 
@@ -62,7 +63,7 @@ export class ColliderManager {
 
 	public dispose() {
 		if (this.collider) {
-			viewer.scene.remove(this.collider);
+			if (this.scene) this.scene.remove(this.collider);
 			this.collider.geometry.dispose();
 			if (Array.isArray(this.collider.material)) {
 				this.collider.material.forEach(m => m.dispose());

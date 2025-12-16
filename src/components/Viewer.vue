@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
+import engine from '../engine/Engine';
 import viewer from '../engine/Viewer';
 import { NConfigProvider, darkTheme, type GlobalTheme } from 'naive-ui';
 import { storeToRefs } from 'pinia';
@@ -7,7 +8,6 @@ import { useSceneStore } from '../stores/sceneStore';
 import LoadingOverlay from './LoadingOverlay.vue';
 import PointerLockPrompt from './PointerLockPrompt.vue';
 import ControlPanel from './ControlPanel.vue';
-import { initViewerScene } from '../engine/ViewerInit';
 import { useViewerSync } from '../composables/useViewerSync';
 
 const store = useSceneStore();
@@ -20,7 +20,7 @@ const {
     interactionText,
 } = storeToRefs(store);
 
-await initViewerScene();
+await engine.init();
 useViewerSync();
 
 // 主题
@@ -30,7 +30,7 @@ const isLocked = ref(false);
 
 const enterPointerLock = () => {
     if (movementMode.value === 'fly' || movementMode.value === 'thirdPerson') {
-        viewer.lockPointer();
+        engine.lockPointer();
     }
 };
 
@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
 
         <div class="ui-layer">
             <PointerLockPrompt :visible="shouldShowPrompt" :mode="movementMode" @enterPointerLock="enterPointerLock" />
-            
+
             <div v-if="showInteractionPrompt" class="interaction-prompt">
                 {{ interactionText }}
             </div>

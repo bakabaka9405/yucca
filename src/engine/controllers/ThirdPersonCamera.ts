@@ -108,6 +108,10 @@ export class ThirdPersonCamera {
         this.camera.lookAt(targetPos);
     }
 
+    setDomElement(domElement: HTMLElement) {
+        this.domElement = domElement;
+    }
+
     setLocked(locked: boolean) {
         this.isLocked = locked;
     }
