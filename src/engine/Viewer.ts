@@ -17,7 +17,7 @@ export class Viewer {
 	camera: THREE.PerspectiveCamera;
 	stats: Stats;
 	renderer: THREE.WebGPURenderer;
-	gtaoPostProcessing: PostProcessing | null = null;
+	postProcessing: PostProcessing | null = null;
 	gtaoEnabled: boolean = true;
 
 	private controllers: { [key in MovementMode]: MovementController };
@@ -27,8 +27,6 @@ export class Viewer {
 	private clock = new THREE.Clock();
 	private environmentTexture: THREE.Texture | null = null;
 	private mixers: THREE.AnimationMixer[] = [];
-	private worldDirection = new THREE.Vector3();
-	private tempTarget = new THREE.Vector3();
 	private skyboxTexture: THREE.CubeTexture | null = null;
 
 	public character: Character | null = null;
@@ -37,14 +35,14 @@ export class Viewer {
 	private updateListeners: Set<(delta: number) => void> = new Set();
 
 	constructor() {
-		// 场景
+
 		this.scene = new THREE.Scene();
-		// 相机
+
 		const width = window.innerWidth;
 		const height = window.innerHeight;
 		this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 3000);
 		this.camera.position.set(1, 1, 1);
-		// 渲染器
+
 		this.renderer = new THREE.WebGPURenderer({
 			antialias: true,
 		});
@@ -71,7 +69,6 @@ export class Viewer {
 
 		this.renderer.setAnimationLoop(this.animate);
 
-		// 画布尺寸随着窗口变化
 		window.addEventListener('resize', () => {
 			this.renderer.setSize(window.innerWidth, window.innerHeight);
 			this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -91,13 +88,6 @@ export class Viewer {
 		}
 	}
 
-	removeMixer(mixer: THREE.AnimationMixer) {
-		const index = this.mixers.indexOf(mixer);
-		if (index !== -1) {
-			this.mixers.splice(index, 1);
-		}
-	}
-
 	async init() {
 		await this.renderer.init();
 		const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
@@ -105,15 +95,15 @@ export class Viewer {
 		this.scene.environment = this.environmentTexture;
 
 		// Post-processing setup
-		this.gtaoPostProcessing = new PostProcessing(this.renderer, this.scene, this.camera);
+		this.postProcessing = new PostProcessing(this.renderer, this.scene, this.camera);
 
 		this.currentController.enter();
 	}
 
 	updateGTAO(params: GTAOParams) {
 		this.gtaoEnabled = params.enabled;
-		if (this.gtaoPostProcessing) {
-			this.gtaoPostProcessing.update(params);
+		if (this.postProcessing) {
+			this.postProcessing.update(params);
 		}
 	}
 
@@ -147,16 +137,14 @@ export class Viewer {
 	}
 
 	setCameraDirection(direction: THREE.Vector3) {
-		if (this.movementMode === 'orbit') return;
-		if (direction.lengthSq() === 0) return;
-		const normalized = direction.clone().normalize();
-		this.tempTarget.copy(this.camera.position).add(normalized);
-		this.camera.lookAt(this.tempTarget);
+		if (this.movementMode === 'orbit' || direction.lengthSq() === 0) return;
+		this.camera.lookAt(direction.add(this.camera.position));
 	}
 
 	getCameraDirection() {
-		this.camera.getWorldDirection(this.worldDirection);
-		return this.worldDirection.clone();
+		const worldDirection = new THREE.Vector3();
+		this.camera.getWorldDirection(worldDirection);
+		return worldDirection;
 	}
 
 	onUpdate(callback: (delta: number) => void) {
@@ -167,22 +155,18 @@ export class Viewer {
 	private animate = () => {
 		const delta = this.clock.getDelta();
 
-		for (const mixer of this.mixers) {
-			mixer.update(delta);
-		}
+		this.mixers.forEach(mixer => mixer.update(delta));
 
-		if (this.character) {
-			this.character.update(delta);
-		}
+		this.character?.update(delta);
 
 		this.currentController.update(delta);
 
 		this.updateListeners.forEach(listener => listener(delta));
 
 		this.stats.update();
-		
-		if (this.gtaoPostProcessing && this.gtaoEnabled) {
-			this.gtaoPostProcessing.render();
+
+		if (this.postProcessing && this.gtaoEnabled) {
+			this.postProcessing.render();
 		} else {
 			this.renderer.render(this.scene, this.camera);
 		}
@@ -197,12 +181,8 @@ export class Viewer {
 
 		this.renderer.dispose();
 
-		if (this.renderer.domElement.parentElement) {
-			this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);
-		}
-		if (this.stats.dom.parentElement) {
-			this.stats.dom.parentElement.removeChild(this.stats.dom);
-		}
+		this.renderer.domElement.parentElement?.removeChild(this.renderer.domElement);
+		this.stats.dom.parentElement?.removeChild(this.stats.dom);
 	}
 
 	setEnvironmentEnabled(enabled: boolean) {
@@ -224,6 +204,10 @@ export class Viewer {
 
 	setSkyboxEnabled(enabled: boolean) {
 		this.scene.background = enabled ? this.skyboxTexture : null;
+	}
+
+	setStatsVisible(visible: boolean) {
+		this.stats.dom.style.display = visible ? 'block' : 'none';
 	}
 }
 

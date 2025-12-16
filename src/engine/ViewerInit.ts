@@ -19,6 +19,10 @@ export async function initViewerScene() {
 
     await viewer.init();
 
+    // 获取渲染器后端信息
+    const renderer = viewer.renderer;
+    store.rendererInfo = renderer.backend.constructor.name.replace('Backend', '');
+
     // 加载天空盒
     const cubeTextureLoader = new THREE.CubeTextureLoader();
     cubeTextureLoader.setPath('cubeMap/');

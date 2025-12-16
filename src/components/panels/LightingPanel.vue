@@ -2,6 +2,7 @@
 import { NSpace, NText, NSwitch, NSlider, NColorPicker, NGrid, NGi } from 'naive-ui';
 import { storeToRefs } from 'pinia';
 import { useSceneStore } from '../../stores/sceneStore';
+import Vector3Input from '../Vector3Input.vue';
 
 const store = useSceneStore();
 const {
@@ -57,26 +58,7 @@ const {
             </n-grid>
             <n-space vertical size="small" v-show="sunEnabled">
                 <n-text depth="3" style="font-size: 11px;">光源位置</n-text>
-                <n-grid :cols="3" :x-gap="8">
-                    <n-gi>
-                        <n-space vertical size="small">
-                            <n-text depth="3" style="font-size: 11px;">X {{ sunPosition.x }}</n-text>
-                            <n-slider v-model:value="sunPosition.x" :min="-100" :max="100" :step="1" />
-                        </n-space>
-                    </n-gi>
-                    <n-gi>
-                        <n-space vertical size="small">
-                            <n-text depth="3" style="font-size: 11px;">Y {{ sunPosition.y }}</n-text>
-                            <n-slider v-model:value="sunPosition.y" :min="0" :max="100" :step="1" />
-                        </n-space>
-                    </n-gi>
-                    <n-gi>
-                        <n-space vertical size="small">
-                            <n-text depth="3" style="font-size: 11px;">Z {{ sunPosition.z }}</n-text>
-                            <n-slider v-model:value="sunPosition.z" :min="-100" :max="100" :step="1" />
-                        </n-space>
-                    </n-gi>
-                </n-grid>
+                <Vector3Input v-model:value="sunPosition" />
             </n-space>
         </n-space>
 

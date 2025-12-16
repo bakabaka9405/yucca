@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, markRaw, reactive } from 'vue';
+import { ref, markRaw } from 'vue';
 import type { MovementMode } from '../engine/Viewer';
 import type * as THREE from 'three';
 
@@ -25,18 +25,21 @@ export const useSceneStore = defineStore('scene', () => {
     const moveSpeed = ref(20);
 
     // 摄像机 
-    const cameraPosition = reactive({ x: 1, y: 1, z: 1 });
-    const cameraDirection = reactive({ x: 0, y: 0, z: -1 });
+    const cameraPosition = ref({ x: 1, y: 1, z: 1 });
+    const cameraDirection = ref({ x: 0, y: 0, z: -1 });
     const isEditingPosition = ref(false);
     const isEditingDirection = ref(false);
 
     // 玩家位置
-    const playerPosition = reactive({ x: 0, y: 0.1, z: 0 });
+    const playerPosition = ref({ x: 0, y: 0.1, z: 0 });
     const isEditingPlayerPosition = ref(false);
 
     // 碰撞箱
     const showCollisionBoxes = ref(false);
     const collisionEnabled = ref(true);
+
+    // Stats
+    const statsVisible = ref(true);
 
     // 交互提示
     const showInteractionPrompt = ref(false);
@@ -49,7 +52,7 @@ export const useSceneStore = defineStore('scene', () => {
     const sunEnabled = ref(true);
     const sunColor = ref('#FFFFFF');
     const sunIntensity = ref(5);
-    const sunPosition = reactive({ x: 10, y: 20, z: -20 });
+    const sunPosition = ref({ x: 10, y: 20, z: -20 });
 
     // 环境光 
     const ambientEnabled = ref(false);
@@ -77,28 +80,35 @@ export const useSceneStore = defineStore('scene', () => {
     const spotDecay = ref(1);
     const spotDistance = ref(1000);
 
+    // 渲染器信息
+    const rendererInfo = ref('');
+
     // Actions 
     function setModelRoot(root: THREE.Object3D | null) {
         modelRoot.value = root ? markRaw(root) : null;
     }
 
     function updateCameraPosition(pos: THREE.Vector3) {
-        copyVector3(pos, cameraPosition);
+        copyVector3(pos, cameraPosition.value);
     }
 
     function updateCameraDirection(pos: THREE.Vector3) {
-        copyVector3(pos, cameraDirection);
+        copyVector3(pos, cameraDirection.value);
     }
 
     function updatePlayerPosition(pos: THREE.Vector3) {
-        copyVector3(pos, playerPosition);
+        copyVector3(pos, playerPosition.value);
     }
 
     return {
         // 加载状态
         isLoading,
         loadingProgress,
-        // 主题
+
+        // 渲染器信息
+        rendererInfo,
+
+        // 主题 
         isDarkMode,
         // 模型
         modelRoot,
@@ -116,6 +126,8 @@ export const useSceneStore = defineStore('scene', () => {
         // 碰撞箱显示
         showCollisionBoxes,
         collisionEnabled,
+        // Stats
+        statsVisible,
         // 交互提示
         showInteractionPrompt,
         interactionText,

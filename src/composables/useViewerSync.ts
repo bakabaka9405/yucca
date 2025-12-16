@@ -15,6 +15,7 @@ export function useViewerSync() {
         movementMode,
         skyboxEnabled,
         showCollisionBoxes,
+        statsVisible,
         playerPosition,
         isEditingPlayerPosition,
         environmentEnabled,
@@ -66,7 +67,7 @@ export function useViewerSync() {
 
     // Player Position
     watchEffect(() => {
-        if (viewer.character?.mesh) {
+        if (isEditingPlayerPosition.value && viewer.character?.mesh) {
             const { x, y, z } = playerPosition.value;
             viewer.character.mesh.position.set(x, y, z);
         }
@@ -85,6 +86,11 @@ export function useViewerSync() {
     // Collision Boxes
     watchEffect(() => {
         colliderManager.setVisibility(showCollisionBoxes.value);
+    });
+
+    // Stats
+    watchEffect(() => {
+        viewer.setStatsVisible(statsVisible.value);
     });
 
     // Environment
@@ -141,7 +147,7 @@ export function useViewerSync() {
     });
 
     // --- Engine -> Store Sync ---
-    
+
     const cleanup = viewer.onUpdate(() => {
         // Sync Camera
         if (!isEditingPosition.value) {
@@ -150,7 +156,7 @@ export function useViewerSync() {
         if (!isEditingDirection.value) {
             store.updateCameraDirection(viewer.getCameraDirection());
         }
-        
+
         // Sync Player
         if (movementMode.value === 'thirdPerson' && !isEditingPlayerPosition.value && viewer.character?.mesh) {
             store.updatePlayerPosition(viewer.character.mesh.position);

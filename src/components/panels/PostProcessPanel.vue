@@ -20,7 +20,7 @@ const {
     <n-space vertical size="large">
         <!-- GTAO -->
         <n-space vertical size="small">
-            <n-text depth="2" style="font-size: 12px; text-transform: uppercase;">GTAO</n-text>
+            <n-text depth="2" style="font-size: 12px;">GTAO</n-text>
             <n-space align="center">
                 <n-switch v-model:value="gtaoEnabled" />
                 <n-text>启用 GTAO</n-text>

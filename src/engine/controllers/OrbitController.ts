@@ -26,13 +26,13 @@ export class OrbitController implements MovementController {
     }
 
     update(deltaTime: number) {
-        this.controls.update();
+        this.controls.update(deltaTime);
     }
 
     dispose() {
         this.controls.dispose();
     }
-    
+
     setTarget(target: THREE.Vector3) {
         this.controls.target.copy(target);
     }
