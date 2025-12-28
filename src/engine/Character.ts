@@ -44,25 +44,27 @@ export class Character {
         };
 
         // Load model
-        const idleObject = await loader.loadFBX(modelUrl, (e) => reportProgress(0, e));
+        const idleGltf = await loader.loadGLTF(modelUrl, (e) => reportProgress(0, e));
+        const idleObject = idleGltf.scene;
         this.mesh = idleObject;
-
         // Setup mesh properties
-        idleObject.scale.set(0.01, 0.01, 0.01);
+        idleObject.scale.set(0.5, 0.5, 0.5);
         idleObject.position.set(0, 0.1, 0);
         this.setupMeshProperties(idleObject);
 
         // Setup mixer and idle action
         this.mixer = new THREE.AnimationMixer(idleObject);
-        this.idleAction = this.mixer.clipAction(idleObject.animations[0]);
+        const idleClip = idleGltf.animations[0];
+        console.log(idleClip);
+        this.idleAction = this.mixer.clipAction(idleClip);
         this.idleAction.play();
         this.currentAction = this.idleAction;
 
         // Load walk animation
-        const walkingObject = await loader.loadFBX(walkUrl, (e) => reportProgress(1, e));
-        this.setupMeshProperties(walkingObject);
-
-        this.walkAction = this.mixer.clipAction(walkingObject.animations[0]);
+        const walkGltf = await loader.loadGLTF(walkUrl, (e) => reportProgress(1, e));
+        const walkClip = walkGltf.animations[0];
+        console.log(walkClip);
+        this.walkAction = this.mixer.clipAction(walkClip);
     }
 
     public update(delta: number) {
