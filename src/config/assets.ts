@@ -1,8 +1,8 @@
 export const ASSETS = {
 	models: {
 		home: 'models/home.glb',
-		characterIdle: 'models/Idle.fbx',
-		characterWalk: 'models/Walking.fbx'
+		characterIdle: 'models/Idle.glb',
+		characterWalk: 'models/Walking.glb'
 	},
 	textures: {
 		skybox: ['xp.jpg', 'xn.jpg',
