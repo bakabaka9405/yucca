@@ -9,6 +9,7 @@ import { Character } from './Character';
 import { InputManager } from './InputManager';
 import { PostProcessing, type GTAOParams } from './PostProcessing';
 import { LightManager } from './LightManager';
+import { HeatmapManager } from './HeatmapManager';
 import { ModelLoader } from './ModelLoader';
 import { InfiniteGrid } from './InfiniteGrid';
 import { colliderManager } from './ColliderManager';
@@ -41,6 +42,7 @@ export class Engine {
 
     public character: Character | null = null;
     public lightManager: LightManager | null = null;
+    public heatmapManager: HeatmapManager | null = null;
     private modelLoader: ModelLoader | null = null;
 
     private updateListeners: Set<(delta: number) => void> = new Set();
@@ -51,7 +53,7 @@ export class Engine {
         this.controllers = {
             fly: new FlyController(viewer.camera, viewer.renderer.domElement),
             orbit: new OrbitController(viewer.camera, viewer.renderer.domElement),
-            thirdPerson: new ThirdPersonController(viewer.camera, viewer.renderer.domElement, new THREE.Vector3()),
+            thirdPerson: new ThirdPersonController(viewer.camera, viewer.renderer.domElement),
             topView: new TopViewController(viewer.camera, viewer.renderer.domElement)
         };
 
@@ -89,6 +91,10 @@ export class Engine {
         // Lights
         this.lightManager = new LightManager(this.scene, viewer.camera);
 
+        // Heatmap
+        this.heatmapManager = new HeatmapManager(viewer.renderer);
+        this.heatmapManager.createDisplayMesh(this.scene);
+
         // Model Loader
         this.modelLoader = new ModelLoader(viewer.renderer);
 
@@ -125,6 +131,12 @@ export class Engine {
 
             // Update matrices
             gltf.scene.updateMatrixWorld(true);
+
+            // Heatmap bounds: keep heatmap within the house XZ range
+            if (this.heatmapManager) {
+                const box = new THREE.Box3().setFromObject(gltf.scene);
+                this.heatmapManager.setXZBoundsFromBox3(box);
+            }
 
             const mixer = new THREE.AnimationMixer(gltf.scene);
             this.addMixer(mixer);
@@ -174,6 +186,11 @@ export class Engine {
 
         // Update PostProcessing
         this.postProcessing = new PostProcessing(newRenderer, this.scene, viewer.camera);
+
+        // Update HeatmapManager
+        if (this.heatmapManager) {
+            this.heatmapManager.setRenderer(newRenderer);
+        }
 
         // Update ModelLoader
         if (this.modelLoader) {
@@ -239,6 +256,14 @@ export class Engine {
         this.movementMode = mode;
         this.currentController = this.controllers[mode];
         this.currentController.enter();
+
+        // Heatmap visibility logic
+        if (mode !== 'topView') {
+            this.setHeatmapVisible(false);
+        } 
+        // Trigger a check
+        const store = useSceneStore();
+        this.setHeatmapVisible(store.showHeatmap);
     }
 
     setCameraPosition(position: THREE.Vector3) {
@@ -267,6 +292,13 @@ export class Engine {
         this.mixers.forEach(mixer => mixer.update(delta));
 
         this.character?.update(delta);
+
+        if (this.character && this.character.mesh && this.heatmapManager && this.character.velocity.lengthSq() > 1.0) {
+            // Only update heatmap data when in thirdPerson mode (when character is moving)
+            if (this.movementMode === 'thirdPerson') {
+                this.heatmapManager.update(this.character.mesh.position);
+            }
+        }
 
         this.currentController.update(delta);
 
@@ -310,6 +342,15 @@ export class Engine {
 
     setSkyboxEnabled(enabled: boolean) {
         this.scene.background = enabled ? this.skyboxTexture : null;
+    }
+
+    setHeatmapVisible(visible: boolean) {
+        // Only allow heatmap in topView mode
+        if (this.movementMode === 'topView') {
+            this.heatmapManager?.setVisible(visible);
+        } else {
+            this.heatmapManager?.setVisible(false);
+        }
     }
 }
 

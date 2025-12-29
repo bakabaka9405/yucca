@@ -37,7 +37,7 @@ export class Viewer {
 		renderer.outputColorSpace = THREE.SRGBColorSpace;
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		renderer.toneMappingExposure = 1.0;
-		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 		renderer.setSize(width, height);
 		return renderer;
 	}
@@ -45,7 +45,7 @@ export class Viewer {
 	async recreateRenderer(antialias: boolean) {
 		const oldRenderer = this.renderer;
 		const newRenderer = this._createRenderer(antialias);
-		
+
 		await newRenderer.init();
 
 		// Replace DOM element

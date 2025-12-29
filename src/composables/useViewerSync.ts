@@ -15,6 +15,7 @@ export function useViewerSync() {
         isEditingDirection,
         movementMode,
         skyboxEnabled,
+        showHeatmap,
         showCollisionBoxes,
         statsVisible,
         playerPosition,
@@ -82,6 +83,11 @@ export function useViewerSync() {
     // Skybox
     watchEffect(() => {
         engine.setSkyboxEnabled(skyboxEnabled.value);
+    });
+
+    // Heatmap
+    watchEffect(() => {
+        engine.setHeatmapVisible(showHeatmap.value);
     });
 
     // Collision Boxes

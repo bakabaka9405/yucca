@@ -27,8 +27,8 @@ export class LightManager {
         this.sunLight.shadow.camera.right = 20;
         this.sunLight.shadow.camera.top = 20;
         this.sunLight.shadow.camera.bottom = -20;
-        this.sunLight.shadow.mapSize.width = 2048;
-        this.sunLight.shadow.mapSize.height = 2048;
+        this.sunLight.shadow.mapSize.width = 1024;
+        this.sunLight.shadow.mapSize.height = 1024;
         this.scene.add(this.sunLight);
 
         this.cameraHelper = new THREE.CameraHelper(this.sunLight.shadow.camera);

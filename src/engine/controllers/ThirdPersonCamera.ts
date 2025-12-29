@@ -97,7 +97,7 @@ export class ThirdPersonCamera {
             }
         }
 
-        const k = 150;
+        const k = 100;
         const c = 20;
         const force = -k * (this.currentRadius - targetRadius) - c * this.radiusVelocity;
         this.radiusVelocity += force * deltaTime;

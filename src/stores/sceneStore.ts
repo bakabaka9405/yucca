@@ -48,6 +48,9 @@ export const useSceneStore = defineStore('scene', () => {
     // 天空盒 
     const skyboxEnabled = ref(true);
 
+    // 热力图
+    const showHeatmap = ref(false);
+
     // 太阳光 
     const sunEnabled = ref(true);
     const sunColor = ref('#FFFFFF');
@@ -133,6 +136,7 @@ export const useSceneStore = defineStore('scene', () => {
         interactionText,
         // 天空盒
         skyboxEnabled,
+        showHeatmap,
         // 太阳光
         sunEnabled,
         sunColor,

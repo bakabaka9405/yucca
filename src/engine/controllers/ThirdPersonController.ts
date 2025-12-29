@@ -15,7 +15,7 @@ export class ThirdPersonController implements MovementController {
     private thirdPersonCamera: ThirdPersonCamera;
 
     private playerMesh: THREE.Object3D | null = null;
-    private playerVelocity: THREE.Vector3;
+    private playerVelocity = new THREE.Vector3();
     private playerDirection = new THREE.Vector3();
 
     private tempForward = new THREE.Vector3();
@@ -28,11 +28,9 @@ export class ThirdPersonController implements MovementController {
     constructor(
         camera: THREE.Camera,
         domElement: HTMLElement,
-        playerVelocity: THREE.Vector3
     ) {
         this.camera = camera;
         this.domElement = domElement;
-        this.playerVelocity = playerVelocity;
 
         this.thirdPersonCamera = new ThirdPersonCamera(camera, domElement);
 

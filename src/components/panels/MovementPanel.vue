@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NSpace, NText, NSelect, NSlider } from 'naive-ui';
+import { NSpace, NText, NSelect, NSlider, NSwitch } from 'naive-ui';
 import { storeToRefs } from 'pinia';
 import { useSceneStore } from '../../stores/sceneStore';
 import Vector3Input from '../Vector3Input.vue';
@@ -30,6 +30,15 @@ const movementOptions = [
         <n-space vertical size="small">
             <n-text depth="2" style="font-size: 12px;">移动方式</n-text>
             <n-select v-model:value="movementMode" :options="movementOptions" />
+        </n-space>
+
+        <!-- 俯视图设置 -->
+        <n-space vertical size="small" v-if="movementMode === 'topView'">
+            <n-text depth="2" style="font-size: 12px;">俯视图设置</n-text>
+            <n-space align="center">
+                <n-switch v-model:value="store.showHeatmap" />
+                <n-text>显示热力图</n-text>
+            </n-space>
         </n-space>
 
         <!-- 移动速度 -->
