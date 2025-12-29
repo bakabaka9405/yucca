@@ -25,19 +25,19 @@ bun run dev
 bun run build
 ```
 
-## 开发现状
+## 系统特色
 
 目前已实现：
 
 - 基础 3D 场景渲染
-- 多模式相机控制（飞行 / 轨道 / 第三人称 / 顶视图）
-- 角色控制与物理碰撞检测（基于 three-mesh-bvh）
-- 骨骼动画绑定
-- 场景交互系统（开关门）
-- 场景树面板与参数调节
-- 基础光照模型（全局光照、太阳光、摄像机锥形光）
-- 模型加载（支持 GLTF/GLB/FBX，KTX2 编码，Draco 压缩）
-- 无限网格辅助显示
+- 多模式相机控制（飞行 / 轨道 / 第三人称 / 顶视）
+- 角色控制与碰撞检测（基于 `three-mesh-bvh`）
+- 骨骼动画与模型绑定
+- 模型加载与压缩支持（GLTF/GLB/FBX、KTX2、Draco）
+- 灯光与后处理（全局光照、太阳光、后处理特效）
+- 场景交互与 UI（开关门、场景树、参数面板、控制面板）
+- 热力图与环境指标管理
+- 模块化引擎结构
 
 ## 目录结构
 
@@ -48,19 +48,28 @@ public/           # 静态资源
 ├── draco/        # Draco 解码器
 ├── models/       # 3D 模型文件
 src/
-├── components/   # Vue UI 组件
-├── config/       # 配置文件
-├── engine/       # 3D 引擎核心逻辑
-│   ├── controllers/       # 相机与角色控制器
-│   ├── Character.ts       # 角色控制逻辑
-│   ├── ColliderManager.ts # 碰撞检测管理
-│   ├── DoorManager.ts     # 交互物体管理
-│   ├── InfiniteGrid.ts    # 无限网格
-│   ├── LightManager.ts    # 灯光管理
-│   ├── ModelLoader.ts     # 模型加载器
-│   ├── Viewer.ts          # 场景核心类
-│   └── ViewerInit.ts      # 场景初始化
-└── stores/       # Pinia 状态管理
+├── App.vue
+├── index.ts
+├── style.css
+├── assets/        # 静态资源（图标、贴图等）
+├── components/    # Vue UI 组件（ControlPanel / LoadingOverlay / Viewer 等）
+├── composables/   # 组合式函数（如 useViewerSync）
+├── config/        # 配置文件
+├── engine/        # 3D 引擎核心逻辑
+│   ├── controllers/          # 各类控制器（Fly / Orbit / ThirdPerson / TopView）
+│   ├── Character.ts          # 角色控制器
+│   ├── ColliderManager.ts    # 碰撞箱控制
+│   ├── DoorManager.ts        # 门交互管理
+│   ├── Engine.ts             # 主引擎模块
+│   ├── EnvHeatmapManager.ts  # 环境热力图管理
+│   ├── HeatmapManager.ts     # 足迹热力图管理
+│   ├── InfiniteGrid.ts       # 地板
+│   ├── InputManager.ts       # 输入管理
+│   ├── LightManager.ts       # 光照管理
+│   ├── ModelLoader.ts        # 模型管理
+│   ├── PostProcessing.ts     # 后处理管理
+│   └── Viewer.ts             # 渲染器管理
+└── stores/         # Pinia 状态管理
 ```
 
 ## 模型文件
