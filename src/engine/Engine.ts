@@ -10,6 +10,7 @@ import { InputManager } from './InputManager';
 import { PostProcessing, type GTAOParams } from './PostProcessing';
 import { LightManager } from './LightManager';
 import { HeatmapManager } from './HeatmapManager';
+import { EnvHeatmapManager, type EnvHeatmapLayer } from './EnvHeatmapManager';
 import { ModelLoader } from './ModelLoader';
 import { InfiniteGrid } from './InfiniteGrid';
 import { colliderManager } from './ColliderManager';
@@ -43,6 +44,7 @@ export class Engine {
     public character: Character | null = null;
     public lightManager: LightManager | null = null;
     public heatmapManager: HeatmapManager | null = null;
+    public envHeatmapManager: EnvHeatmapManager | null = null;
     private modelLoader: ModelLoader | null = null;
 
     private updateListeners: Set<(delta: number) => void> = new Set();
@@ -95,6 +97,10 @@ export class Engine {
         this.heatmapManager = new HeatmapManager(viewer.renderer);
         this.heatmapManager.createDisplayMesh(this.scene);
 
+        // Env Heatmaps (temperature / humidity / PM2.5)
+        this.envHeatmapManager = new EnvHeatmapManager(viewer.renderer);
+        this.envHeatmapManager.createDisplayMeshes(this.scene);
+
         // Model Loader
         this.modelLoader = new ModelLoader(viewer.renderer);
 
@@ -136,6 +142,11 @@ export class Engine {
             if (this.heatmapManager) {
                 const box = new THREE.Box3().setFromObject(gltf.scene);
                 this.heatmapManager.setXZBoundsFromBox3(box);
+            }
+
+            if (this.envHeatmapManager) {
+                const box = new THREE.Box3().setFromObject(gltf.scene);
+                this.envHeatmapManager.setXZBoundsFromBox3(box);
             }
 
             const mixer = new THREE.AnimationMixer(gltf.scene);
@@ -190,6 +201,10 @@ export class Engine {
         // Update HeatmapManager
         if (this.heatmapManager) {
             this.heatmapManager.setRenderer(newRenderer);
+        }
+
+        if (this.envHeatmapManager) {
+            this.envHeatmapManager.setRenderer(newRenderer);
         }
 
         // Update ModelLoader
@@ -260,10 +275,12 @@ export class Engine {
         // Heatmap visibility logic
         if (mode !== 'topView') {
             this.setHeatmapVisible(false);
+            this.setEnvHeatmapLayer(null);
         } 
         // Trigger a check
         const store = useSceneStore();
         this.setHeatmapVisible(store.showHeatmap);
+        this.setEnvHeatmapLayer(store.envHeatmapLayer);
     }
 
     setCameraPosition(position: THREE.Vector3) {
@@ -298,6 +315,10 @@ export class Engine {
             if (this.movementMode === 'thirdPerson') {
                 this.heatmapManager.update(this.character.mesh.position);
             }
+        }
+
+        if (this.envHeatmapManager) {
+            this.envHeatmapManager.update(delta);
         }
 
         this.currentController.update(delta);
@@ -350,6 +371,15 @@ export class Engine {
             this.heatmapManager?.setVisible(visible);
         } else {
             this.heatmapManager?.setVisible(false);
+        }
+    }
+
+    setEnvHeatmapLayer(layer: EnvHeatmapLayer | null) {
+        // Only allow env heatmaps in topView mode
+        if (this.movementMode === 'topView') {
+            this.envHeatmapManager?.setActiveLayer(layer);
+        } else {
+            this.envHeatmapManager?.setActiveLayer(null);
         }
     }
 }

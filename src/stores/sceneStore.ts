@@ -3,6 +3,8 @@ import { ref, markRaw } from 'vue';
 import type { MovementMode } from '../engine/Engine';
 import type * as THREE from 'three';
 
+export type EnvHeatmapLayer = 'temperature' | 'humidity' | 'pm25' | null;
+
 const copyVector3 = (src: THREE.Vector3, dest: { x: number; y: number; z: number }) => {
     dest.x = parseFloat(src.x.toFixed(2));
     dest.y = parseFloat(src.y.toFixed(2));
@@ -50,6 +52,19 @@ export const useSceneStore = defineStore('scene', () => {
 
     // 热力图
     const showHeatmap = ref(false);
+
+    // 环境热力图（互斥）
+    const envHeatmapLayer = ref<EnvHeatmapLayer>(null);
+
+    // 环境数据（真实值，默认舒适）
+    const temperatureC = ref(23);
+    const humidityRh = ref(50);
+    const pm25Ug = ref(12);
+
+    // 舒适区间
+    const temperatureComfort = ref({ min: 20, max: 26 });
+    const humidityComfort = ref({ min: 40, max: 60 });
+    const pm25Comfort = ref({ max: 35 });
 
     // 太阳光 
     const sunEnabled = ref(true);
@@ -137,6 +152,19 @@ export const useSceneStore = defineStore('scene', () => {
         // 天空盒
         skyboxEnabled,
         showHeatmap,
+
+        // 环境热力图
+        envHeatmapLayer,
+
+        // 环境数据
+        temperatureC,
+        humidityRh,
+        pm25Ug,
+
+        // 舒适区间
+        temperatureComfort,
+        humidityComfort,
+        pm25Comfort,
         // 太阳光
         sunEnabled,
         sunColor,

@@ -74,7 +74,7 @@ export class ThirdPersonCamera {
     update(deltaTime: number) {
         if (!this.target) return;
 
-        const damping = 1 - Math.exp(-25 * deltaTime);
+        const damping = 1 - Math.exp(-5 * deltaTime);
 
         let deltaTheta = this.targetTheta - this.theta;
 

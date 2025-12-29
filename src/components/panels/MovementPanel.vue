@@ -14,7 +14,21 @@ const {
     isEditingDirection,
     playerPosition,
     isEditingPlayerPosition,
+    envHeatmapLayer,
 } = storeToRefs(store);
+
+type LayerKey = 'temperature' | 'humidity' | 'pm25';
+
+const toggleEnvLayer = (layer: LayerKey, enabled: boolean) => {
+    if (enabled) {
+        envHeatmapLayer.value = layer;
+        return;
+    }
+
+    if (envHeatmapLayer.value === layer) {
+        envHeatmapLayer.value = null;
+    }
+};
 
 const movementOptions = [
     { label: '飞行', value: 'fly' },
@@ -37,7 +51,31 @@ const movementOptions = [
             <n-text depth="2" style="font-size: 12px;">俯视图设置</n-text>
             <n-space align="center">
                 <n-switch v-model:value="store.showHeatmap" />
-                <n-text>显示热力图</n-text>
+                <n-text>足迹热力图</n-text>
+            </n-space>
+
+            <n-space align="center">
+                <n-switch
+                    :value="envHeatmapLayer === 'temperature'"
+                    @update:value="(v) => toggleEnvLayer('temperature', v)"
+                />
+                <n-text>温度</n-text>
+            </n-space>
+
+            <n-space align="center">
+                <n-switch
+                    :value="envHeatmapLayer === 'humidity'"
+                    @update:value="(v) => toggleEnvLayer('humidity', v)"
+                />
+                <n-text>湿度</n-text>
+            </n-space>
+
+            <n-space align="center">
+                <n-switch
+                    :value="envHeatmapLayer === 'pm25'"
+                    @update:value="(v) => toggleEnvLayer('pm25', v)"
+                />
+                <n-text>PM2.5</n-text>
             </n-space>
         </n-space>
 

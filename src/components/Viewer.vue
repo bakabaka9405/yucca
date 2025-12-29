@@ -8,6 +8,7 @@ import { useSceneStore } from '../stores/sceneStore';
 import LoadingOverlay from './LoadingOverlay.vue';
 import PointerLockPrompt from './PointerLockPrompt.vue';
 import ControlPanel from './ControlPanel.vue';
+import EnvIndicators from './EnvIndicators.vue';
 import { useViewerSync } from '../composables/useViewerSync';
 
 const store = useSceneStore();
@@ -56,6 +57,8 @@ onBeforeUnmount(() => {
 
         <div class="ui-layer">
             <PointerLockPrompt :visible="shouldShowPrompt" :mode="movementMode" @enterPointerLock="enterPointerLock" />
+
+            <EnvIndicators />
 
             <div v-if="showInteractionPrompt" class="interaction-prompt">
                 {{ interactionText }}

@@ -16,6 +16,7 @@ export function useViewerSync() {
         movementMode,
         skyboxEnabled,
         showHeatmap,
+        envHeatmapLayer,
         showCollisionBoxes,
         statsVisible,
         playerPosition,
@@ -88,6 +89,11 @@ export function useViewerSync() {
     // Heatmap
     watchEffect(() => {
         engine.setHeatmapVisible(showHeatmap.value);
+    });
+
+    // Env Heatmaps (mutually exclusive)
+    watchEffect(() => {
+        engine.setEnvHeatmapLayer(envHeatmapLayer.value);
     });
 
     // Collision Boxes
