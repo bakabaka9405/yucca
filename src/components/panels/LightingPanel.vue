@@ -75,7 +75,7 @@ const {
                     <n-gi>
                         <n-space vertical size="small">
                             <n-text depth="3" style="font-size: 11px;">仰角 {{ sunElevationDeg.toFixed(0) }}°</n-text>
-                            <n-slider v-model:value="sunElevationDeg" :min="-89" :max="89" :step="1" />
+                            <n-slider v-model:value="sunElevationDeg" :min="0" :max="90" :step="1" />
                         </n-space>
                     </n-gi>
                 </n-grid>
