@@ -30,7 +30,7 @@ export class InputManager {
         window.addEventListener('mousedown', (e) => this.onMouseDown(e));
         window.addEventListener('mouseup', (e) => this.onMouseUp(e));
         window.addEventListener('mousemove', (e) => this.onMouseMove(e));
-        window.addEventListener('wheel', (e) => this.onWheel(e), { passive: false });
+        window.addEventListener('wheel', (e) => this.onWheel(e), { passive: true });
     }
 
     private onKeyDown(event: KeyboardEvent) {

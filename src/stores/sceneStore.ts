@@ -70,7 +70,10 @@ export const useSceneStore = defineStore('scene', () => {
     const sunEnabled = ref(true);
     const sunColor = ref('#FFFFFF');
     const sunIntensity = ref(5);
-    const sunPosition = ref({ x: 10, y: 20, z: -20 });
+    const sunPosition = ref({ x: 5, y: 10, z: -10 });
+    const sunRadius = ref(15);
+    const sunAzimuthDeg = ref(27);
+    const sunElevationDeg = ref(42);
 
     // 环境光 
     const ambientEnabled = ref(false);
@@ -170,6 +173,9 @@ export const useSceneStore = defineStore('scene', () => {
         sunColor,
         sunIntensity,
         sunPosition,
+        sunRadius,
+        sunAzimuthDeg,
+        sunElevationDeg,
         // 环境光
         ambientEnabled,
         ambientColor,

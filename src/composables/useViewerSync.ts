@@ -1,10 +1,47 @@
-import { watchEffect, onUnmounted } from 'vue';
+import { watch, watchEffect, onUnmounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useSceneStore } from '../stores/sceneStore';
 import viewer from '../engine/Viewer';
 import engine from '../engine/Engine';
 import * as THREE from 'three/webgpu';
 import { colliderManager } from '../engine/ColliderManager';
+
+const radToDeg = (rad: number) => (rad * 180) / Math.PI;
+const degToRad = (deg: number) => (deg * Math.PI) / 180;
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const normalizeDeg180 = (deg: number) => {
+    const wrapped = ((deg + 180) % 360 + 360) % 360 - 180;
+    return wrapped === -180 ? 180 : wrapped;
+};
+
+function cartesianToSpherical(position: { x: number; y: number; z: number }) {
+    const { x, y, z } = position;
+    const radius = Math.sqrt(x * x + y * y + z * z);
+    const azimuthRad = Math.atan2(x, -z);
+    const horizontal = Math.sqrt(x * x + z * z);
+    const elevationRad = Math.atan2(y, horizontal);
+    return {
+        radius,
+        azimuthDeg: normalizeDeg180(radToDeg(azimuthRad)),
+        elevationDeg: clamp(radToDeg(elevationRad), -89, 89),
+    };
+}
+
+function sphericalToCartesian(azimuthDeg: number, elevationDeg: number, radius: number) {
+    const azimuthRad = degToRad(azimuthDeg);
+    const elevationRad = degToRad(clamp(elevationDeg, -89, 89));
+    const safeRadius = Math.max(0, radius);
+    const horizontal = safeRadius * Math.cos(elevationRad);
+    const x = horizontal * Math.sin(azimuthRad);
+    const z = -horizontal * Math.cos(azimuthRad);
+    const y = safeRadius * Math.sin(elevationRad);
+
+    return {
+        x: parseFloat(x.toFixed(2)),
+        y: parseFloat(y.toFixed(2)),
+        z: parseFloat(z.toFixed(2)),
+    };
+}
 
 export function useViewerSync() {
     const store = useSceneStore();
@@ -35,6 +72,9 @@ export function useViewerSync() {
         sunColor,
         sunIntensity,
         sunPosition,
+        sunRadius,
+        sunAzimuthDeg,
+        sunElevationDeg,
         ambientEnabled,
         ambientColor,
         ambientIntensity,
@@ -46,6 +86,38 @@ export function useViewerSync() {
         spotDecay,
         spotDistance
     } = storeToRefs(store);
+
+    // --- Spherical Sun Position Sync (Store <-> Store) ---
+
+    let syncingFromSpherical = false;
+    let syncingFromCartesian = false;
+
+    watch(
+        sunPosition,
+        (pos) => {
+            if (syncingFromSpherical) return;
+            syncingFromCartesian = true;
+            const spherical = cartesianToSpherical(pos);
+            if (spherical.radius > 0) {
+                sunRadius.value = parseFloat(spherical.radius.toFixed(2));
+            }
+            sunAzimuthDeg.value = spherical.azimuthDeg;
+            sunElevationDeg.value = spherical.elevationDeg;
+            syncingFromCartesian = false;
+        },
+        { deep: true, immediate: true }
+    );
+
+    watch(
+        [sunAzimuthDeg, sunElevationDeg, sunRadius],
+        ([azimuthDeg, elevationDeg, radius]) => {
+            if (syncingFromCartesian) return;
+            syncingFromSpherical = true;
+            sunPosition.value = sphericalToCartesian(azimuthDeg, elevationDeg, radius);
+            syncingFromSpherical = false;
+        },
+        { immediate: true }
+    );
 
     // --- Store -> Engine Sync ---
 

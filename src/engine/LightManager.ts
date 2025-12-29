@@ -17,7 +17,7 @@ export class LightManager {
     private initLights() {
         // 太阳光（平行光）
         this.sunLight = new THREE.DirectionalLight(0xFFFFFF, 5);
-        this.sunLight.position.set(10, 20, -20);
+        this.sunLight.position.set(5, 10, -10);
         this.sunLight.castShadow = true;
         this.sunLight.shadow.bias = -0.0001;
         this.sunLight.shadow.normalBias = 0.05;

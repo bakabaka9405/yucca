@@ -2,7 +2,6 @@
 import { NSpace, NText, NSwitch, NSlider, NColorPicker, NGrid, NGi } from 'naive-ui';
 import { storeToRefs } from 'pinia';
 import { useSceneStore } from '../../stores/sceneStore';
-import Vector3Input from '../Vector3Input.vue';
 
 const store = useSceneStore();
 const {
@@ -10,7 +9,9 @@ const {
     sunEnabled,
     sunColor,
     sunIntensity,
-    sunPosition,
+    sunRadius,
+    sunAzimuthDeg,
+    sunElevationDeg,
     ambientEnabled,
     ambientColor,
     ambientIntensity,
@@ -58,7 +59,26 @@ const {
             </n-grid>
             <n-space vertical size="small" v-show="sunEnabled">
                 <n-text depth="3" style="font-size: 11px;">光源位置</n-text>
-                <Vector3Input v-model:value="sunPosition" />
+                <n-grid :cols="3" :x-gap="8">
+                    <n-gi>
+                        <n-space vertical size="small">
+                            <n-text depth="3" style="font-size: 11px;">R {{ sunRadius.toFixed(1) }}</n-text>
+                            <n-slider v-model:value="sunRadius" :min="1" :max="100" :step="0.1" />
+                        </n-space>
+                    </n-gi>
+                    <n-gi>
+                        <n-space vertical size="small">
+                            <n-text depth="3" style="font-size: 11px;">方位 {{ sunAzimuthDeg.toFixed(0) }}°</n-text>
+                            <n-slider v-model:value="sunAzimuthDeg" :min="-180" :max="180" :step="1" />
+                        </n-space>
+                    </n-gi>
+                    <n-gi>
+                        <n-space vertical size="small">
+                            <n-text depth="3" style="font-size: 11px;">仰角 {{ sunElevationDeg.toFixed(0) }}°</n-text>
+                            <n-slider v-model:value="sunElevationDeg" :min="-89" :max="89" :step="1" />
+                        </n-space>
+                    </n-gi>
+                </n-grid>
             </n-space>
         </n-space>
 
