@@ -83,7 +83,7 @@ const pm25Percent = computed(() => scaleToPercent(pm25Ug.value, 0, 200));
     position: absolute;
     left: 16px;
     top: 220px;
-    width: 8%;
+    width: 150px;
     pointer-events: auto;
     opacity: 0.18;
     transition: opacity 160ms ease;
