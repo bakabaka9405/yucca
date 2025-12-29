@@ -97,7 +97,7 @@ export class Engine {
             const character = new Character();
             try {
                 if (this.modelLoader) {
-                    await character.load(this.modelLoader, ASSETS.models.characterIdle, ASSETS.models.characterWalk, (progress) => {
+                    await character.load(this.modelLoader, ASSETS.models.char, (progress) => {
                         if (progress.lengthComputable) {
                             store.loadingProgress = 50 + Math.round((progress.loaded / progress.total) * 50);
                         }

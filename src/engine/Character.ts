@@ -29,42 +29,20 @@ export class Character {
         });
     }
 
-    public async load(loader: ModelLoader, modelUrl: string, walkUrl: string, onProgress?: (progress: ProgressEvent) => void) {
-        const reportProgress = (phase: number, e: ProgressEvent) => {
-            if (!onProgress) return;
-            if (e.lengthComputable && e.total > 0) {
-                const percent = e.loaded / e.total;
-                const overall = (phase * 0.5) + (percent * 0.5);
-                onProgress(new ProgressEvent('progress', {
-                    lengthComputable: true,
-                    loaded: overall * 100,
-                    total: 100
-                }));
-            }
-        };
+    public async load(loader: ModelLoader, modelUrl: string, onProgress?: (progress: ProgressEvent) => void) {
 
-        // Load model
-        const idleGltf = await loader.loadGLTF(modelUrl, (e) => reportProgress(0, e));
-        const idleObject = idleGltf.scene;
-        this.mesh = idleObject;
-        // Setup mesh properties
-        idleObject.scale.set(0.5, 0.5, 0.5);
-        idleObject.position.set(0, 0.1, 0);
-        this.setupMeshProperties(idleObject);
+        const charGltf = await loader.loadGLTF(modelUrl, (e) => onProgress && onProgress(e));
+        const char = charGltf.scene;
+        char.scale.set(0.45, 0.45, 0.45);
+        char.position.set(0, 0.1, 0);
+        this.setupMeshProperties(char);
 
-        // Setup mixer and idle action
-        this.mixer = new THREE.AnimationMixer(idleObject);
-        const idleClip = idleGltf.animations[0];
-        console.log(idleClip);
-        this.idleAction = this.mixer.clipAction(idleClip);
+        this.mixer = new THREE.AnimationMixer(char);
+        this.idleAction = this.mixer.clipAction(charGltf.animations[0]);
         this.idleAction.play();
         this.currentAction = this.idleAction;
-
-        // Load walk animation
-        const walkGltf = await loader.loadGLTF(walkUrl, (e) => reportProgress(1, e));
-        const walkClip = walkGltf.animations[0];
-        console.log(walkClip);
-        this.walkAction = this.mixer.clipAction(walkClip);
+        this.mesh = char;
+        this.walkAction = this.mixer.clipAction(charGltf.animations[1]);
     }
 
     public update(delta: number) {
